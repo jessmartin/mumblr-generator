@@ -8,6 +8,6 @@
     "typescript": "^4.6.3"
   },
   "scripts": {
-    "run": "tsc -w"
+    "generate": "tsc && node out/js/app.js"
   }
 }
