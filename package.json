@@ -9,5 +9,9 @@
   },
   "scripts": {
     "generate": "tsc && node out/js/app.js"
+  },
+  "dependencies": {
+    "ipfs": "^0.62.3",
+    "js-ipfs-fetch": "^3.5.1"
   }
 }
