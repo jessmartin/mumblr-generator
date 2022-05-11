@@ -1,0 +1,13 @@
+{
+  "name": "mumblr-generator",
+  "description": "Simple static site generator for mumblr",
+  "version": "0.0.1",
+  "main": "./src/app.ts",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.6.3"
+  },
+  "scripts": {
+    "run": "tsc -w"
+  }
+}
