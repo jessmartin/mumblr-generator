@@ -8,9 +8,10 @@ const { JSDOM } = jsdom;
 
 export default async function main() {
   console.log('Starting IPFS...');
-
   const ipfs = await create();
-  const cid = 'bafybeid42tsayaxar7zjtt6cgp5prqxdripty4zcky6r5ekmm3qxi66daq';
+
+  // The CID for the folder containing the markdown files
+  const cid = 'bafybeih3yplpf4rtzh2xncwmsxlvoftbaj45agbpt3jga234vperrrmbjq';
 
   let blogPostHtml = '';
   for await (const fileEntry of ipfs.ls(cid)) {
