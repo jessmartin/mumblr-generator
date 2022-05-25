@@ -2,32 +2,71 @@ import { IPFS, create } from 'ipfs-core';
 import type { CID } from 'ipfs-core';
 import { marked } from 'marked';
 import fs from 'fs';
-
+import { FrontMatterResult } from 'front-matter';
 const jsdom = require('jsdom'); // Consider replacing with linkedom
 const { JSDOM } = jsdom;
+const fm = require('front-matter');
 
 export default async function main() {
   console.log('Starting IPFS...');
   const ipfs = await create();
 
   // The CID for the folder containing the markdown files
-  const cid = 'bafybeih3yplpf4rtzh2xncwmsxlvoftbaj45agbpt3jga234vperrrmbjq';
+  // TODO: Figure out how to get a CID from a stable name
+  const cid = 'bafybeicgvcvvbvr36beth2nb7ogbmn2pmcgvi7zhxilbaakhceuird65ei';
 
   let blogPostHtml = '';
+
+  let markdownFiles: string[] = [];
+
+  // Collect the files and their timestamps
   for await (const fileEntry of ipfs.ls(cid)) {
     console.log('Parsing ' + fileEntry.name);
     // Grab the file's content
     const content = await readFile(ipfs, fileEntry.cid);
 
-    // Transform the file's contents into HTML using marked
+    // Ignore files that don't have postedAt
+    const contentFm = fm(content);
+    if (contentFm.attributes.postedAt === undefined) {
+      continue;
+    }
+
+    markdownFiles.push(content);
+  }
+
+  // Ignore files that don't have frontmatter
+
+  // Sort the files by timestamp
+  // TODO: Write tests for this
+  markdownFiles.sort((a, b) => {
+    const aFm = fm(a);
+    const bFm = fm(b);
+
+    return (
+      new Date(bFm.attributes.postedAt).getTime() -
+      new Date(aFm.attributes.postedAt).getTime()
+    );
+  });
+
+  // Parse the markdown files into HTML
+  for await (const markdownFile of markdownFiles) {
+    // Transform the file's contents into HTML
+    const postDate = fm(markdownFile).attributes.postedAt;
+    const contentString = markdownFile.toString();
+
     const updateItem = new JSDOM(`
       <div class="update">
-        <div class="update-t" data-timestamp="???">
-          <a class="datestamp" href="???" title="Updates on this date">???</a>
-          <a class="clockstamp" href="/updates/???" title="Permalink to this update">???</a>
+        <div class="update-t" data-timestamp="#">
+          <a class="datestamp" href="#" title="Updates on this date">${postDate.toLocaleString(
+            'en-us',
+            { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }
+          )}</a>
+          <!-- <a class="clockstamp" href="/updates/???" title="Permalink to this update">???</a> -->
         </div>
         <div class="update-s">
-          ${marked.parse(content.toString())}
+          ${marked.parse(
+            contentString.slice(contentString.indexOf('---', 4) + 5)
+          )}
         </div>
       </div>`);
 
