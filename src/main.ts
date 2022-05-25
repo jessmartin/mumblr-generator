@@ -2,6 +2,7 @@ import { IPFS, create } from 'ipfs-core';
 import type { CID } from 'ipfs-core';
 import { marked } from 'marked';
 import fs from 'fs';
+import { FrontMatterResult } from 'front-matter';
 const jsdom = require('jsdom'); // Consider replacing with linkedom
 const { JSDOM } = jsdom;
 const fm = require('front-matter');
@@ -11,7 +12,8 @@ export default async function main() {
   const ipfs = await create();
 
   // The CID for the folder containing the markdown files
-  const cid = 'bafybeie62oukwmw2vl3musknzib4eyahytw46nogi6dzo66jd6czvokbyu';
+  // TODO: Figure out how to get a CID from a stable name
+  const cid = 'bafybeicgvcvvbvr36beth2nb7ogbmn2pmcgvi7zhxilbaakhceuird65ei';
 
   let blogPostHtml = '';
 
@@ -23,40 +25,48 @@ export default async function main() {
     // Grab the file's content
     const content = await readFile(ipfs, fileEntry.cid);
 
+    // Ignore files that don't have postedAt
+    const contentFm = fm(content);
+    if (contentFm.attributes.postedAt === undefined) {
+      continue;
+    }
+
     markdownFiles.push(content);
   }
 
+  // Ignore files that don't have frontmatter
+
   // Sort the files by timestamp
-  // TODO: Change `posted_at` to `postedAt` because JavaScript
+  // TODO: Write tests for this
   markdownFiles.sort((a, b) => {
-    // TODO: Handle empty frontmatter
     const aFm = fm(a);
     const bFm = fm(b);
 
-    // TODO: Handle empty `posted_at` attributes
     return (
-      new Date(bFm.attributes.posted_at).getTime() -
-      new Date(aFm.attributes.posted_at).getTime()
+      new Date(bFm.attributes.postedAt).getTime() -
+      new Date(aFm.attributes.postedAt).getTime()
     );
   });
 
   // Parse the markdown files into HTML
   for await (const markdownFile of markdownFiles) {
     // Transform the file's contents into HTML
-    const postDate = fm(markdownFile).attributes.posted_at;
+    const postDate = fm(markdownFile).attributes.postedAt;
+    const contentString = markdownFile.toString();
 
-    // TODO: Ignore the frontmatter or strip it off or something?
     const updateItem = new JSDOM(`
       <div class="update">
-        <div class="update-t" data-timestamp="???">
-          <a class="datestamp" href="???" title="Updates on this date">${postDate.toLocaleString(
+        <div class="update-t" data-timestamp="#">
+          <a class="datestamp" href="#" title="Updates on this date">${postDate.toLocaleString(
             'en-us',
             { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }
           )}</a>
-          <a class="clockstamp" href="/updates/???" title="Permalink to this update">???</a>
+          <!-- <a class="clockstamp" href="/updates/???" title="Permalink to this update">???</a> -->
         </div>
         <div class="update-s">
-          ${marked.parse(markdownFile.toString())}
+          ${marked.parse(
+            contentString.slice(contentString.indexOf('---', 4) + 5)
+          )}
         </div>
       </div>`);
 
