@@ -59,7 +59,7 @@ export default async function main() {
         <div class="update-t" data-timestamp="#">
           <a class="datestamp" href="#" title="Updates on this date">${postDate.toLocaleString(
             'en-us',
-            { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' }
+            { year: 'numeric', month: 'numeric', day: 'numeric' }
           )}</a>
           <!-- <a class="clockstamp" href="/updates/???" title="Permalink to this update">???</a> -->
         </div>
