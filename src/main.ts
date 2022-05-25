@@ -65,7 +65,7 @@ export default async function main() {
         </div>
         <div class="update-s">
           ${marked.parse(
-            contentString.slice(contentString.indexOf('---', 4) + 5)
+            contentString.slice(contentString.indexOf('---', 4) + 4)
           )}
         </div>
       </div>`);
