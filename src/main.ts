@@ -13,7 +13,7 @@ export default async function main() {
 
   // The CID for the folder containing the markdown files
   // TODO: Figure out how to get a CID from a stable name
-  const cid = 'bafybeiapsyyb75hawqhrqng53ilkh62gzdjhlx373r5odmyljfghirjnsa';
+  const cid = 'bafybeiewc25nxwyjymq2fk4tnilbkrtdbnxgraawn4nmoygprvz273hdhe';
 
   let blogPostHtml = '';
 
