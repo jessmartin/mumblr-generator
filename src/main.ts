@@ -13,11 +13,15 @@ export default async function main() {
 
   // The CID for the folder containing the markdown files
   // TODO: Figure out how to get a CID from a stable name
-  const cid = 'bafybeiewc25nxwyjymq2fk4tnilbkrtdbnxgraawn4nmoygprvz273hdhe';
+  const cid = 'bafybeibqz6khd5mjtmkcl36hqbojmmqiy2ieavyj3alt27xe5cggycm7ce';
 
   let blogPostHtml = '';
 
   let markdownFiles: string[] = [];
+
+  type Attributes = {
+    postedAt: Date;
+  };
 
   // Collect the files and their timestamps
   for await (const fileEntry of ipfs.ls(cid)) {
@@ -25,16 +29,15 @@ export default async function main() {
     // Grab the file's content
     const content = await readFile(ipfs, fileEntry.cid);
 
-    // Ignore files that don't have postedAt
-    const contentFm = fm(content);
-    if (contentFm.attributes.postedAt === undefined) {
+    // Ignore files that don't have frontmatter or don't have postedAt
+    const contentFm: FrontMatterResult<Attributes> = fm(content);
+    if (contentFm?.attributes.postedAt === undefined) {
+      console.log('Skipping ' + fileEntry.name + ' because it has no postedAt');
       continue;
     }
 
     markdownFiles.push(content);
   }
-
-  // Ignore files that don't have frontmatter
 
   // Sort the files by timestamp
   // TODO: Write tests for this
